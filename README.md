@@ -12,26 +12,26 @@ The HUB device is the center  point for the infrastructure. Any Linux-capable ma
 ## Message format
 The protocol works in the 5th layer of the OSI Reference Model. Its message format is simmilar to the one of SIP, with the removal of unnecessary fields.
 
-<table>
+<table width="600px">
     <tbody>
         <tr>
-            <td>Operation</td>
-            <td>URI</td>
-            <td>Version</td>
+            <td width="100px" align=center valign=center>Operation</td>
+            <td width="100px" align=center valign=center>URI</td>
+            <td width="100px" align=center valign=center>Version</td>
         </tr>
         <tr>
-            <td colspan=3>Sender: <sender name></td>
+            <td align=center valign=center colspan=3>Sender: <i>Sender IP, URI or alias</i></td>
         </tr>
         <tr>
-            <td colspan=3>Receiver: <receiver name></td>
+            <td align=center valign=center colspan=3>Receiver: <i>Receiver IP, URI or alias</i></td>
         </tr>
         <tr>
-            <td colspan=3>Content-Type: <content type></td>
+            <td align=center valign=center colspan=3>Content-Type: <i>MIME Content Type</i></td>
         </tr>
         <tr>
-        	<td colspan=3 rowspan=2>
-        		key1='val1', key2='val2', ...
-        		keyN='valN'
+        	<td align=center valign=center colspan=3 rowspan=3>
+        		key1='<i>val1</i>', key2='<i>val2</i>', ... <br>
+        		keyN='<i>valN</i>'
         	</td>
         </tr>
     </tbody>
