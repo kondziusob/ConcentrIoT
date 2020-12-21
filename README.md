@@ -12,13 +12,30 @@ The HUB device is the center  point for the infrastructure. Any Linux-capable ma
 ## Message format
 The protocol works in the 5th layer of the OSI Reference Model. Its message format is simmilar to the one of SIP, with the removal of unnecessary fields.
 
-| Operation | URI | Version |
-|---|---|---|
-| Sender: <sender name> ||
-| Receiver: <receiver name> ||
-| Content-Type: <content type> ||
-| key1='val1', key2='val2', ... ||
-| keyN='valN' ||
+<table>
+    <tbody>
+        <tr>
+            <td>Operation</td>
+            <td>URI</td>
+            <td>Version</td>
+        </tr>
+        <tr>
+            <td colspan=3>Sender: <sender name></td>
+        </tr>
+        <tr>
+            <td colspan=3>Receiver: <receiver name></td>
+        </tr>
+        <tr>
+            <td colspan=3>Content-Type: <content type></td>
+        </tr>
+        <tr>
+        	<td colspan=3 rowspan=2>
+        		key1='val1', key2='val2', ...
+        		keyN='valN'
+        	</td>
+        </tr>
+    </tbody>
+</table>
 
 ### Available *request* operations 
 - *DISCOVER* - sent on a regular basis in order to keep up the neighbourhood relationship
