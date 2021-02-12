@@ -29,6 +29,9 @@ The protocol works in the 5th layer of the OSI Reference Model. Its message form
             <td align=center valign=center colspan=3>Content-Type: <i>MIME Content Type</i></td>
         </tr>
         <tr>
+            <td align=center valign=center colspan=3>Content-Length: <i>Length</i></td>
+        </tr>
+        <tr>
         	<td align=center valign=center colspan=3 rowspan=3>
         		key1='<i>val1</i>', key2='<i>val2</i>', ... <br>
         		keyN='<i>valN</i>'
