@@ -5,116 +5,161 @@ import tensorflow as tf
 import random
 from tensorflow.python.keras.utils import data_utils
 from Config import Config
+from DatabaseGenerator import DataGenerator
 import imageio
-import cv2
-from PIL import Image
+import pathlib
 
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+  try:
+    # Currently, memory growth needs to be the same across GPUs
+    for gpu in gpus:
+      tf.config.experimental.set_memory_growth(gpu, True)
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+  except RuntimeError as e:
+    # Memory growth must be set before GPUs have been initialized
+    print(e)
 
-
-class DataGenerator(tf.data.Dataset):
-    
-    def _generator(num_samples, size = (224,224), SAMPLE_DIR = "Database/cars_train" , FG_DIR="Database/VW/tmp3", MASK_DIR = "Database/VW_Masks2", BG_DIR="Database/Backgrounds"):
+class TrainOnCustomObject(Config):
+    def __init__(self):
         
-        data_augmentation = tf.keras.Sequential([
-          tf.keras.layers.experimental.preprocessing.RandomZoom(-0.3, -0.3),
-          tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
-          tf.keras.layers.experimental.preprocessing.RandomContrast(0.5)
-        ])
-
-        #it's custom arumnted tf's layer to diversyfied db. in color dimension
-        color_augmentation = tf.keras.Sequential([
-          RandomColorDistortion(), # colour distoriton 
-          tf.keras.layers.experimental.preprocessing.RandomContrast(0.5) #contrast distortion 
-        ])
-        FG_DIR = FG_DIR.decode("utf-8")
-        fg_list = os.listdir(FG_DIR)[:-1]
-        fg_img = [tf.expand_dims(imageio.imread(os.path.join(FG_DIR, i)),0) for i in fg_list]          
-        fg_size = len(fg_list)
-        
-        MASK_DIR = MASK_DIR.decode("utf-8")
-        mask_img = [np.repeat(imageio.imread(os.path.join(MASK_DIR, i))[:, :, np.newaxis], 3, axis=2)  for i in fg_list]
-        
-        BG_DIR = BG_DIR.decode("utf-8")
-        bg_list = os.listdir(BG_DIR)[:-1]
-        bg_img = [tf.expand_dims(imageio.imread(os.path.join(BG_DIR, i)),0) for i in bg_list]          
-        bg_size = len(bg_list)
-        
-        SAMPLE_DIR = SAMPLE_DIR.decode("utf-8")
-        sample_list = os.listdir(SAMPLE_DIR)[:50]
-        sample_img = [tf.expand_dims(imageio.imread(os.path.join(SAMPLE_DIR, i)),0) for i in sample_list]          
-        sample_size = len(sample_list)
-        img_shape = size + (3,)
-
-        for sample_idx in range(num_samples):
-            class_index = random.randint(0,1) 
-            if class_index:
-                
-                fg_index = random.randint(0, fg_size-1)
-                foreground =  fg_img[fg_index] 
-                #foreground = tf.expand_dims(foreground, 0)
-                foreground = color_augmentation(foreground, training = True).numpy()[0,:,:,:]
-                
-                bg_index = random.randint(0, bg_size - 1)
-                background = bg_img[bg_index]
-                
-                #background = tf.expand_dims(background, 0)
-                background = data_augmentation(background, training = True)
-                background = color_augmentation(background, training = True)    
-                background = background.numpy()[0,:,:,:]
-
-                mask = mask_img[fg_index]
-                
-                foreground = np.multiply(mask, foreground)
-                background = np.multiply(1 - mask, background)
-
-                img = np.add(foreground, background)
-                
-            else: 
-                img_index = random.randint(0, sample_size-1)
-                img = sample_img[img_index]                
-                #img = tf.expand_dims(img, 0)
-                img = data_augmentation(img, training = True)
-                img = color_augmentation(img, training = True).numpy()[0,:,:,:]
-                
-
-            yield (img, class_index,)
-    
-    def __new__(cls,num_samples, img_size, samle_dir, fg_dir, mask_dir, bg_dir):
-        img_shape = img_size + (3, )
-        
-        return tf.data.Dataset.from_generator(
-            cls._generator,
-            output_shapes = (img_shape, ()),
-            output_types = (tf.float32, tf.int32),
-            args=(
-                num_samples, 
-                img_size, 
-                samle_dir, 
-                fg_dir, 
-                mask_dir, 
-                bg_dir
-            )
+        db_gen = DataGenerator(
+            self.NUM_BATCH_IN_EPOCH * self.BATCH_SIZE,
+            self.IMG_SIZE, 
+            self.SAMPLE_DIR.encode("utf-8"),
+            self.FG_DIR.encode("utf-8"), 
+            self.MASK_DIR.encode("utf-8"), 
+            self.BG_DIR.encode("utf-8")
         )
-
-class RandomColorDistortion(tf.keras.layers.Layer):
-    def __init__(self, contrast_range=[0.5, 1.5], 
-                 brightness_delta=[-0.2, 0.2], **kwargs):
-        super(RandomColorDistortion, self).__init__(**kwargs)
-        self.contrast_range = contrast_range
-        self.brightness_delta = brightness_delta
-    
-    def call(self, images, training=None):
-        if not training:
-            return images
+        """
+        db_gen = tf.data.Dataset.range(2).interleave(
+            lambda _: db_gen,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .batch(self.BATCH_SIZE, drop_remainder=True)
+        .cache() 
+        .prefetch(tf.data.experimental.AUTOTUNE)
+        .unbatch()
+        """
         
-        contrast = np.random.uniform(
-            self.contrast_range[0], self.contrast_range[1])
-        brightness = np.random.uniform(
-            self.brightness_delta[0], self.brightness_delta[1])
-        images = tf.image.adjust_contrast(images, contrast)
-        images = tf.image.adjust_brightness(images, brightness)
+        db_gen = tf.data.Dataset.range(2).interleave(lambda _: db_gen, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(self.BATCH_SIZE, drop_remainder=True).cache().prefetch(tf.data.experimental.AUTOTUNE).unbatch()
+        
+        
+        
+        self.train_dataset = db_gen.batch(self.BATCH_SIZE)
+        self.validation_dataset = db_gen.batch(self.BATCH_SIZE)
+        self.test_dataset = db_gen.batch(self.BATCH_SIZE)  
+        
+        preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 
-        return images
+        IMG_SHAPE = self.IMG_SIZE + (3,)
+        self.base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
+                                               include_top=False,
+                                               weights='imagenet')
+        
+        AUTOTUNE = tf.data.experimental.AUTOTUNE
+        self.train_dataset = self.train_dataset.prefetch(buffer_size=self.BATCH_SIZE)
+
+        image_batch, label_batch = next(iter(self.train_dataset))
+        feature_batch = self.base_model(image_batch)
+        self.base_model.trainable = False
+        
+        global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
+        feature_batch_average = global_average_layer(feature_batch)
+        
+        prediction_layer = tf.keras.layers.Dense(1, activation = "tanh")
+        prediction_batch = prediction_layer(feature_batch_average)
+
+        
+        inputs = tf.keras.Input(shape=IMG_SHAPE)
+        
+        x = preprocess_input(inputs)
+        x = self.base_model(x, training=False)
+        x = global_average_layer(x)
+        x = tf.keras.layers.Dropout(0.2)(x)
+        outputs = prediction_layer(x)
+
+        self.model = tf.keras.Model(inputs, outputs)
+        self.model.compile(optimizer=tf.keras.optimizers.Adam(lr=self.LR),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+        return 
+
+    def get_model(self):
+        return self.model
+       #from Config import Config
+       
+    def create_folder(self, path):
+        if not os.path.exists(path):
+            print("Creating of new directory: " + path )
+            os.makedirs(path)
+        
+    def train_model(self, save_dir = None):
+        
+        history = self.model.fit(
+            self.train_dataset,
+            epochs=self.INITIAL_EPOCHS,
+            validation_data = self.validation_dataset)
+
+        acc = history.history['accuracy']
+        val_acc = history.history['val_accuracy']
+
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
+
+        # fine tuning 
+
+        self.base_model.trainable = True
+        for layer in self.base_model.layers[:self.FINE_TUNE_AT]:
+            layer.trainable = False
+
+        self.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              optimizer = tf.keras.optimizers.RMSprop(lr=self.FINE_TUNE_LR),
+              metrics=['accuracy'])
+        
+
+        fine_tune_epochs = self.INITIAL_EPOCHS + self.FINE_TUNE_EPOCHS
+
+        total_epochs =  self.INITIAL_EPOCHS + self.FINE_TUNE_EPOCHS
+
+        history_fine = self.model.fit(self.train_dataset,
+                         initial_epoch=history.epoch[-1],
+                         epochs=fine_tune_epochs,
+                         validation_data=self.validation_dataset)
+
+        acc += history_fine.history['accuracy']
+        val_acc += history_fine.history['val_accuracy']
+
+        loss += history_fine.history['loss']
+        val_loss += history_fine.history['val_loss']
+
+        if save_dir:
+
+            self.create_folder(save_dir)
+
+            plt.figure(figsize=(8, 8))
+            plt.subplot(2, 1, 1)
+            plt.plot(acc, label='Training Accuracy')
+            plt.plot(val_acc, label='Validation Accuracy')
+            plt.ylim([0.3, 1])
+            plt.plot([self.INITIAL_EPOCHS-1,self.INITIAL_EPOCHS-1],
+                    plt.ylim(), label='Start Fine Tuning')
+            plt.legend(loc='lower right')
+            plt.title('Training and Validation Accuracy')
+
+            plt.subplot(2, 1, 2)
+            plt.plot(loss, label='Training Loss')
+            plt.plot(val_loss, label='Validation Loss')
+            plt.ylim([0, 1.0])
+            plt.plot([self.INITIAL_EPOCHS-1,self.INITIAL_EPOCHS-1],
+                    plt.ylim(), label='Start Fine Tuning')
+            plt.legend(loc='upper right')
+            plt.title('Training and Validation Loss')
+            plt.xlabel('epoch')
+            plt.savefig(save_dir+"/trainig2.jpg")
+
+        return self.model
 
 tr = TrainOnCustomObject()
 model = tr.train_model("result_plot")
