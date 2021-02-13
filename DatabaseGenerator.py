@@ -16,8 +16,8 @@ class DataGenerator(tf.data.Dataset):
     def _generator(num_samples, size = (224,224), SAMPLE_DIR = "Database/cars_train" , FG_DIR="Database/VW/tmp3", MASK_DIR = "Database/VW_Masks2", BG_DIR="Database/Backgrounds"):
         
         data_augmentation = tf.keras.Sequential([
-          tf.keras.layers.experimental.preprocessing.RandomZoom(-0.3, -0.3),
-          tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
+          tf.keras.layers.experimental.preprocessing.RandomZoom(-0.5, -0.5),
+          tf.keras.layers.experimental.preprocessing.RandomRotation(0.5),
           tf.keras.layers.experimental.preprocessing.RandomContrast(0.5)
         ])
 
@@ -51,7 +51,7 @@ class DataGenerator(tf.data.Dataset):
                 
                 fg_index = random.randint(0, fg_size-1)
                 foreground =  fg_img[fg_index] 
-                #foreground = tf.expand_dims(foreground, 0)
+                #foreground = data_augmentation(background, training = True)
                 foreground = color_augmentation(foreground, training = True).numpy()[0,:,:,:]
                 
                 bg_index = random.randint(0, bg_size - 1)
@@ -68,6 +68,8 @@ class DataGenerator(tf.data.Dataset):
                 background = np.multiply(1 - mask, background)
 
                 img = np.add(foreground, background)
+                img = tf.expand_dims(img, 0)
+                img = data_augmentation(img, training=True).numpy()[0,:,:,:]
                 
             else: 
                 img_index = random.randint(0, sample_size-1)
@@ -98,7 +100,7 @@ class DataGenerator(tf.data.Dataset):
 
 class RandomColorDistortion(tf.keras.layers.Layer):
     def __init__(self, contrast_range=[0.5, 1.5], 
-                 brightness_delta=[-0.2, 0.2], **kwargs):
+                 brightness_delta=[-0.5, 0.5], **kwargs):
         super(RandomColorDistortion, self).__init__(**kwargs)
         self.contrast_range = contrast_range
         self.brightness_delta = brightness_delta
@@ -115,7 +117,6 @@ class RandomColorDistortion(tf.keras.layers.Layer):
         images = tf.image.adjust_brightness(images, brightness)
 
         return images
-    
 """
     
     
