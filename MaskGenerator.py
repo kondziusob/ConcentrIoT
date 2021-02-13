@@ -93,15 +93,16 @@ class MaskGenerator(Config):
         # Run detection
         results = self.model.detect([image], verbose=1)[0]
 
-        index = np.argmax([np.sum(results['masks'][:,:,x]) for x in  range(results['masks'].shape[-1])])
-        mask = results['masks'][:,:,index].astype(int)
-        mask = cv2.resize(mask, self.IMG_SIZE, interpolation = cv2.INTER_LINEAR)
+        if len(np.shape(results["mask"])) == 3:
+          index = np.argmax([np.sum(results['masks'][:,:,x]) for x in  range(results['masks'].shape[-1])])
+          mask = results['masks'][:,:,index].astype(int)
+          mask = cv2.resize(mask, self.IMG_SIZE, interpolation = cv2.INTER_LINEAR)
 
-        file_name = os.path.split(file_dir)[-1].split('/')[-1]
-        file_name = os.path.split(file_name)[-1].split('.')[0]+".jpg"
-        mask_dir = mask_dir +'/'+file_name
-        
-        cv2.imwrite(mask_dir, mask)
+          file_name = os.path.split(file_dir)[-1].split('/')[-1]
+          file_name = os.path.split(file_name)[-1].split('.')[0]+".jpg"
+          mask_dir = mask_dir +'/'+file_name
+          
+          cv2.imwrite(mask_dir, mask)
         return
 
 
