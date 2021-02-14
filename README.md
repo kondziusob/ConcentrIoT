@@ -55,3 +55,6 @@ The protocol works in the 5th layer of the OSI Reference Model. Its message form
 - *AUTHENTICATE* - authentication needed (required parameters: challenge-method, challenge parameters)
 - *CONFIGCONTENT* - contains a JSON dump of the configuration (required parameters: config - stringified JSON configuration inside)
 - *ERROR* - a fatal error has occured (required parameters: ecode - error code)
+
+### Data Generator
+Data generator is intended to perform extremelly deep augmentation to force NN to recognize robust features from small dataset. In our demo, we are training NN to recognize our car. To achieve satisfaiable performance we generate datasaples under lazy evaluation. Samples of our car are merged with random background. All samples are transfered through geometric and colour augmentation. In a training loop, data are fatched under lazy evaluation (we fatch data only when data generator get request to do so). Working with such architecture, we can paralelize data generation as imageas in a batch can be generate parallely. With optimized input pipeline, we were able to reduce the time of learning four times. Accuracy, is very close to 100%, nevertheless due to the small set of photos of our car, we cannot relay on validation probability. However, in practise, the net works well when exposed to the images captured form camera. 
