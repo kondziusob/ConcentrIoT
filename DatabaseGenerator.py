@@ -16,7 +16,7 @@ class DataGenerator(tf.data.Dataset):
     def _generator(num_samples, size = (224,224), SAMPLE_DIR = "Database/cars_train" , FG_DIR="Database/VW/tmp3", MASK_DIR = "Database/VW_Masks2", BG_DIR="Database/Backgrounds"):
         
         data_augmentation = tf.keras.Sequential([
-          tf.keras.layers.experimental.preprocessing.RandomZoom(-0.5, -0.5),
+          tf.keras.layers.experimental.preprocessing.RandomZoom(-0.8, -0.5),
           tf.keras.layers.experimental.preprocessing.RandomRotation(0.5),
           tf.keras.layers.experimental.preprocessing.RandomContrast(0.5)
         ])
