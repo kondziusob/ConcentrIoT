@@ -87,5 +87,6 @@ dropout (Dropout)            (None, 1280)              0
 dense (Dense)                (None, 1)                 1281      
 
 ### Model Training 
-As we can see above, our model has single output. Therefore it can distinguish between our car and not our car. Non-active output neuron coresponds to our car and active outpur neuron coresponds to not our car. In all trainings, we were using BinaryCrossentropy as it fit perfectelly to our needs. We use transfer learning to speed up learning. Firstly we freeze all weights in mobolienet and train only the last classification layers. Then, we un-freeze the top layers of the model (100 layers from mobilenet). We fine tune our model to adjust to our particular data requirements.
+As we can see above, our model has a single output. Therefore it can distinguish between our car and not our car. Non-active output neuron corresponds to our car and active output neuron corresponds to not our car. In all stages, we were using BinaryCrossentropy as it fits perfectly to our needs. We use transfer learning to speed up learning. Firstly we freeze all weights in mobolienet and train only the last classification layers. Then, we un-freeze the top layers of the model (100 layers from mobilenet). We fine-tune our model to adjust to our particular data requirements.
 
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/training_plot.jpg)
