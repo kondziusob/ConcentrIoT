@@ -56,6 +56,13 @@ The protocol works in the 5th layer of the OSI Reference Model. Its message form
 - *CONFIGCONTENT* - contains a JSON dump of the configuration (required parameters: config - stringified JSON configuration inside)
 - *ERROR* - a fatal error has occured (required parameters: ecode - error code)
 
+### Car Recognition IoT Device
+One practical example of putting the IoT network into practice is a common appliance – smart garage. Our system allows us to train a neural network to learn to recognize vehicle of the user. It does so by being fed pictures of the car, which then are projected on different backgrounds with different noise and blur. 
+
+After being trained the network parameters are being converted to more portable version in tensorflow lite, and uploaded to the raspberry pi via the central Hub. Raspberry pi is equipped with a camera. It regularly records the garage area, and using a separate image processing algorithm detects when a car is nearby. When detected, the neural network is run to determine whether the vehicle is the predefined one. Later, the IoT protocol allows the Pi to take appropriate action, by sending a signal back to the Hub. The functionality can be pretty much anything, whether it’s opening the gate to the garage or starting to make coffee for the user.
+The system can also be applied to bigger structures. For example, a smart traffic light system could be implemented, with Pi recognizing if vehicles are nearby and sending appropriate signal to the main lights controller. 
+Another element of versatility of the system is the fact that it is also able to detect different objects than cars. It can also differentiate between  couple of animals species and everyday items. Pet owners might want to develop some smart functionality in case their dog or cat gets caught leaving the property.  
+
 ### Data Generator
 The data generator is intended to perform extremely deep augmentation to force NN to recognize robust features from a small dataset. In our demo, we are training NN to recognize our car. To achieve the satisfactory performance we generate data samples under lazy evaluation. Samples of our car are merged with the random background. All samples are transferred through geometric and color augmentation. In a training loop, data are fetched under lazy evaluation. Working with such architecture, we can parallelize data generation as images in a batch can be generated parallelly. With an optimized input pipeline, we were able to reduce the time of learning four times. Accuracy is very close to 100%, nevertheless, due to the small set of photos of our car, we cannot rely on validation probability. However, in practice, the networks well when exposed to the images captured from the camera. 
 
