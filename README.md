@@ -70,10 +70,10 @@ The data generator is intended to perform extremely deep augmentation to force N
 ### Data Generator Optimization
 Dataset pipelines are bottlenecks in many ML applications that rely on dynamically generate the database. Therefore, we should take care of it as it's a place where we should start optimizing our ML workflow. Firstly, the independence of sample generation allows us to benefit from parallelizing data extraction. To mitigate data extraction we use tf.data.Dataset.interleav transformation to parallelize the data loading step. Then, we can cach a dataset in memory to save some operations. Finally, we can save a lot of time prefetching overlaps of the preprocessing and model execution of a training step. Overall, we reduced the time of learning four times. Below, we can see the results of our optimizations. 
 #### Naive data pipeline
-![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/naive.jpg)
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/OptimisationAnalysis/naive.jpg)
 
 #### Optimized data pipeline
-![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/optimized.jpg)
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/OptimisationAnalysis/optimized.jpg)
 
 
 ### Model
@@ -90,4 +90,4 @@ dense (Dense)                (None, 1)                 1281
 ### Model Training 
 As we can see above, our model has a single output. Therefore it can distinguish between our car and not our car. Non-active output neuron corresponds to our car and active output neuron corresponds to not our car. In all stages, we were using BinaryCrossentropy as it fits perfectly to our needs. We use transfer learning to speed up learning. Firstly we freeze all weights in mobolienet and train only the last classification layers. Then, we un-freeze the top layers of the model (100 layers from mobilenet). We fine-tune our model to adjust to our particular data requirements. The parameters of the network are described in the config file, making the whole system more customizable. 
 
-![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/training_plot.jpg)
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/OptimisationAnalysis/training_plot.jpg)
