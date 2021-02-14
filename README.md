@@ -63,3 +63,7 @@ The data generator is intended to perform extremely deep augmentation to force N
 Dataset pipelines are bottlenecks in many ML applications that rely on dynamically generate the database. Therefore, we should take care of it as it's a place where we should start optimizing our ML workflow. Firstly, the independence of sample generation allows us to benefit from parallelizing data extraction. To mitigate data extraction we use tf.data.Dataset.interleav transformation to parallelize the data loading step. Then, we can cach a dataset in memory to save some operations. Finally, we can save a lot of time prefetching overlaps of the preprocessing and model execution of a training step. Overall, we reduced the time of learning four times. Below, we can see the results of our optimizations. 
 ## Naive data pipeline
 ![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/naive.jpg)
+
+## Optimized data pipeline
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/optimized.jpg)
+
