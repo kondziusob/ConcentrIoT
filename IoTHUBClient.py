@@ -61,7 +61,7 @@ class IoTHUBClient(object):
 
 			return True
 		except:
-			raise Exception("HUB got disconnected while at work.")
+                        self.lookup_hub()
 
 	def keepalive(self):
 		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
