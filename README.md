@@ -59,6 +59,7 @@ The protocol works in the 5th layer of the OSI Reference Model. Its message form
 ### Data Generator
 The data generator is intended to perform extremely deep augmentation to force NN to recognize robust features from a small dataset. In our demo, we are training NN to recognize our car. To achieve the satisfactory performance we generate data samples under lazy evaluation. Samples of our car are merged with the random background. All samples are transferred through geometric and color augmentation. In a training loop, data are fetched under lazy evaluation. Working with such architecture, we can parallelize data generation as images in a batch can be generated parallelly. With an optimized input pipeline, we were able to reduce the time of learning four times. Accuracy is very close to 100%, nevertheless, due to the small set of photos of our car, we cannot rely on validation probability. However, in practice, the networks well when exposed to the images captured from the camera. 
 
-### Data Generator Optimization
+## Data Generator Optimization
 Dataset pipelines are bottlenecks in many ML applications that rely on dynamically generate the database. Therefore, we should take care of it as it's a place where we should start optimizing our ML workflow. Firstly, the independence of sample generation allows us to benefit from parallelizing data extraction. To mitigate data extraction we use tf.data.Dataset.interleav transformation to parallelize the data loading step. Then, we can cach a dataset in memory to save some operations. Finally, we can save a lot of time prefetching overlaps of the preprocessing and model execution of a training step. Overall, we reduced the time of learning four times. Below, we can see the results of our optimizations. 
-
+## Naive data pipeline
+![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/naive.jpg)
