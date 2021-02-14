@@ -74,3 +74,18 @@ Dataset pipelines are bottlenecks in many ML applications that rely on dynamical
 #### Optimized data pipeline
 ![alt text](https://github.com/kondziusob/ConcentrIoT/raw/master/optimized.jpg)
 
+
+### Model
+
+Layer (type)                 Output Shape              Param #   
+input_2 (InputLayer)         [(None, 224, 224, 3)]     0         
+tf_op_layer_RealDiv (TensorF [(None, 224, 224, 3)]     0         
+tf_op_layer_Sub (TensorFlowO [(None, 224, 224, 3)]     0         
+mobilenetv2_1.00_224 (Functi (None, 7, 7, 1280)        2257984   
+global_average_pooling2d (Gl (None, 1280)              0         
+dropout (Dropout)            (None, 1280)              0         
+dense (Dense)                (None, 1)                 1281      
+
+### Model Training 
+As we can see above, our model has single output. Therefore it can distinguish between our car and not our car. Non-active output neuron coresponds to our car and active outpur neuron coresponds to not our car. In all trainings, we were using BinaryCrossentropy as it fit perfectelly to our needs. We use transfer learning to speed up learning. Firstly we freeze all weights in mobolienet and train only the last classification layers. Then, we un-freeze the top layers of the model (100 layers from mobilenet). We fine tune our model to adjust to our particular data requirements.
+
